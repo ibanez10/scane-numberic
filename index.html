@@ -2,449 +2,353 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Number Scanner</title>
-<script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #1a1a1a; min-height: 100vh; }
-
-  .app { max-width: 480px; margin: 0 auto; padding: 16px; }
-
-  h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
-  .subtitle { font-size: 13px; color: #666; margin-bottom: 20px; }
-
-  .camera-box {
-    background: #000;
-    border-radius: 12px;
-    overflow: hidden;
-    position: relative;
-    aspect-ratio: 4/3;
-    width: 100%;
-    margin-bottom: 12px;
-  }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
+  .app { max-width: 480px; margin: 0 auto; padding: 16px 16px 40px; }
+  .header { margin-bottom: 16px; }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header p { font-size: 13px; color: #666; margin-top: 2px; }
+  .camera-wrap { background: #111; border-radius: 14px; overflow: hidden; position: relative; width: 100%; aspect-ratio: 4/3; margin-bottom: 10px; }
   #video { width: 100%; height: 100%; object-fit: cover; display: block; }
   #canvas { display: none; }
-
-  .overlay-guide {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 200px; height: 80px;
-    border: 2px solid rgba(255,255,255,0.7);
-    border-radius: 8px;
-    pointer-events: none;
-  }
-  .overlay-label {
-    position: absolute;
-    bottom: 10px; left: 50%;
-    transform: translateX(-50%);
-    font-size: 11px; color: rgba(255,255,255,0.75);
-    background: rgba(0,0,0,0.4);
-    padding: 3px 10px;
-    border-radius: 20px;
-    white-space: nowrap;
-  }
-
-  .status-bar {
-    font-size: 13px;
-    color: #555;
-    text-align: center;
-    margin-bottom: 12px;
-    min-height: 20px;
-  }
-  .status-bar.scanning { color: #185FA5; }
-  .status-bar.found { color: #3B6D11; font-weight: 600; }
-  .status-bar.error { color: #A32D2D; }
-
-  .btn-row { display: flex; gap: 10px; margin-bottom: 16px; }
-  button {
-    flex: 1;
-    padding: 12px 8px;
-    border-radius: 10px;
-    border: 1.5px solid #ddd;
-    background: #fff;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-  }
+  #preview { width: 100%; height: 100%; object-fit: contain; display: none; background: #000; }
+  .guide-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 75%; height: 40%; border: 2px solid rgba(255,255,255,0.6); border-radius: 8px; pointer-events: none; }
+  .cam-hint { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 11px; color: rgba(255,255,255,0.75); pointer-events: none; }
+  .status { text-align: center; font-size: 13px; padding: 9px 12px; border-radius: 8px; margin-bottom: 10px; min-height: 36px; display: flex; align-items: center; justify-content: center; }
+  .status.idle { background: #e8f4fd; color: #1a5f9e; }
+  .status.scanning { background: #fff8e1; color: #b45309; }
+  .status.success { background: #e8f5e9; color: #2e7d32; }
+  .status.error { background: #fdecea; color: #c62828; }
+  .progress { height: 4px; background: #ddd; border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
+  .progress-bar { height: 100%; width: 0; background: #2563eb; border-radius: 2px; transition: width 0.3s; }
+  .btn-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  button { cursor: pointer; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; padding: 12px 10px; transition: opacity 0.15s, transform 0.1s; }
   button:active { transform: scale(0.97); }
-  #scanBtn {
-    background: #185FA5;
-    color: #fff;
-    border-color: #185FA5;
-    font-size: 15px;
-  }
-  #scanBtn:disabled { background: #888; border-color: #888; cursor: not-allowed; }
-  #clearBtn { color: #A32D2D; border-color: #f0c0c0; }
-
-  .results-section {
-    background: #fff;
-    border-radius: 12px;
-    border: 1px solid #e5e5e5;
-    padding: 14px;
-    margin-bottom: 14px;
-  }
-  .results-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  .results-title { font-size: 14px; font-weight: 600; }
-  .count-badge {
-    font-size: 12px;
-    background: #E6F1FB;
-    color: #185FA5;
-    padding: 2px 10px;
-    border-radius: 20px;
-    font-weight: 600;
-  }
-
-  #numberList {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    min-height: 40px;
-  }
-  .num-chip {
-    background: #f0f4ff;
-    border: 1px solid #c5d5f0;
-    color: #0C447C;
-    font-size: 18px;
-    font-weight: 700;
-    font-family: monospace;
-    padding: 6px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.1s;
-  }
-  .num-chip:hover { background: #ddeaff; }
-  .num-chip.selected { background: #185FA5; color: #fff; border-color: #185FA5; }
-  .empty-hint { font-size: 13px; color: #aaa; align-self: center; }
-
-  .export-section { margin-bottom: 14px; }
-  .export-title { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  #scanBtn { flex: 2; background: #2563eb; color: #fff; font-size: 15px; }
+  #retakeBtn { flex: 1; background: #e5e7eb; color: #374151; display: none; }
+  #clearBtn { flex: 1; background: #fee2e2; color: #991b1b; }
+  #uploadBtn { width: 100%; background: #f3f4f6; color: #374151; border: 1.5px dashed #9ca3af; border-radius: 10px; padding: 11px; font-size: 13px; margin-bottom: 14px; }
+  .section { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 14px; margin-bottom: 12px; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .section-title { font-size: 14px; font-weight: 700; }
+  .badge { background: #dbeafe; color: #1d4ed8; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+  #chipWrap { display: flex; flex-wrap: wrap; gap: 8px; min-height: 38px; align-items: center; }
+  .chip { background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1e3a8a; font-size: 20px; font-weight: 800; font-family: monospace; padding: 6px 16px; border-radius: 8px; cursor: pointer; transition: background 0.1s; }
+  .chip:active { background: #bfdbfe; }
+  .chip.sel { background: #2563eb; color: #fff; border-color: #2563eb; }
+  .empty { font-size: 13px; color: #9ca3af; }
   .export-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .export-btn {
-    flex: unset;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    font-size: 13px;
-    font-weight: 500;
-    justify-content: center;
-  }
-  .export-btn .icon { font-size: 18px; }
-
-  .history-section {
-    background: #fff;
-    border-radius: 12px;
-    border: 1px solid #e5e5e5;
-    padding: 14px;
-  }
-  .history-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
-  #historyList { font-size: 13px; color: #555; }
-  .history-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 5px 0;
-    border-bottom: 0.5px solid #f0f0f0;
-  }
-  .history-row:last-child { border-bottom: none; }
-  .history-nums { font-family: monospace; font-weight: 600; color: #185FA5; }
-  .history-time { font-size: 11px; color: #aaa; }
-
-  .progress-bar {
-    height: 3px;
-    background: #e5e5e5;
-    border-radius: 2px;
-    margin-bottom: 10px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: #185FA5;
-    border-radius: 2px;
-    width: 0%;
-    transition: width 0.3s;
-  }
-
-  .toast {
-    position: fixed;
-    bottom: 24px; left: 50%;
-    transform: translateX(-50%);
-    background: #1a1a1a;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-size: 13px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-    white-space: nowrap;
-    z-index: 999;
-  }
+  .exp-btn { background: #f9fafb; border: 1px solid #e5e7eb !important; border-radius: 10px; padding: 12px 8px; font-size: 13px; font-weight: 600; color: #374151; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .exp-icon { font-size: 22px; }
+  #historyWrap { font-size: 13px; }
+  .h-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f3f4f6; }
+  .h-row:last-child { border-bottom: none; }
+  .h-nums { font-family: monospace; font-weight: 700; color: #2563eb; font-size: 14px; }
+  .h-time { color: #9ca3af; font-size: 11px; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1f2937; color: #fff; padding: 10px 22px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.25s; pointer-events: none; white-space: nowrap; z-index: 999; }
   .toast.show { opacity: 1; }
 </style>
 </head>
 <body>
 <div class="app">
-  <h1>📷 Number Scanner</h1>
-  <p class="subtitle">Point camera at numbers — auto-extracts 3-digit values</p>
+  <div class="header">
+    <h1>📷 Number Scanner</h1>
+    <p>Scan 3-digit numbers — export to Excel, Word, Sheets</p>
+  </div>
 
-  <div class="camera-box">
+  <div class="camera-wrap">
     <video id="video" autoplay playsinline muted></video>
     <canvas id="canvas"></canvas>
-    <div class="overlay-guide"></div>
-    <div class="overlay-label">Align numbers inside the box</div>
+    <img id="preview" alt="captured">
+    <div class="guide-box"></div>
+    <div class="cam-hint">Aim numbers at the box — tap Scan</div>
   </div>
 
-  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-  <div class="status-bar" id="statusBar">Starting camera...</div>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="status idle" id="statusEl">Starting camera…</div>
 
   <div class="btn-row">
-    <button id="scanBtn" disabled onclick="captureAndScan()">Scan Now</button>
-    <button id="clearBtn" onclick="clearResults()">Clear All</button>
+    <button id="scanBtn" disabled onclick="doScan()">📷 Scan Now</button>
+    <button id="retakeBtn" onclick="retake()">🔄 Retake</button>
+    <button id="clearBtn" onclick="clearAll()">🗑 Clear</button>
   </div>
+  <button id="uploadBtn" onclick="triggerUpload()">📁 Upload photo from gallery instead</button>
 
-  <div class="results-section">
-    <div class="results-header">
-      <span class="results-title">Scanned Numbers</span>
-      <span class="count-badge" id="countBadge">0</span>
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Scanned Numbers</span>
+      <span class="badge" id="badge">0</span>
     </div>
-    <div id="numberList"><span class="empty-hint">No numbers yet — tap Scan</span></div>
+    <div id="chipWrap"><span class="empty">No numbers yet — tap Scan</span></div>
   </div>
 
-  <div class="export-section">
-    <div class="export-title">Export to</div>
+  <div class="section">
+    <div class="section-title" style="margin-bottom:10px">Export</div>
     <div class="export-grid">
-      <button class="export-btn" onclick="exportCSV()"><span class="icon">📊</span> Excel / CSV</button>
-      <button class="export-btn" onclick="exportTXT()"><span class="icon">📝</span> Word (.txt)</button>
-      <button class="export-btn" onclick="copyToClipboard()"><span class="icon">📋</span> Copy (Sheets)</button>
-      <button class="export-btn" onclick="exportJSON()"><span class="icon">📦</span> JSON</button>
+      <button class="exp-btn" onclick="exportCSV()"><span class="exp-icon">📊</span>Excel / CSV</button>
+      <button class="exp-btn" onclick="exportTXT()"><span class="exp-icon">📝</span>Word (.txt)</button>
+      <button class="exp-btn" onclick="copySheets()"><span class="exp-icon">📋</span>Copy for Sheets</button>
+      <button class="exp-btn" onclick="exportJSON()"><span class="exp-icon">📦</span>JSON</button>
     </div>
   </div>
 
-  <div class="history-section">
-    <div class="history-title">Scan History</div>
-    <div id="historyList"><span style="font-size:13px;color:#aaa;">No history yet</span></div>
+  <div class="section">
+    <div class="section-title" style="margin-bottom:10px">Scan History</div>
+    <div id="historyWrap"><span class="empty">No history yet</span></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const statusBar = document.getElementById('statusBar');
-const scanBtn = document.getElementById('scanBtn');
-const numberList = document.getElementById('numberList');
-const countBadge = document.getElementById('countBadge');
-const progressFill = document.getElementById('progressFill');
-const historyList = document.getElementById('historyList');
+var video = document.getElementById('video');
+var canvas = document.getElementById('canvas');
+var preview = document.getElementById('preview');
+var scanBtn = document.getElementById('scanBtn');
+var retakeBtn = document.getElementById('retakeBtn');
+var statusEl = document.getElementById('statusEl');
+var progressBar = document.getElementById('progressBar');
+var chipWrap = document.getElementById('chipWrap');
+var badge = document.getElementById('badge');
+var historyWrap = document.getElementById('historyWrap');
 
-let scannedNumbers = [];
-let history = [];
-let worker = null;
-let scanning = false;
+var numbers = [];
+var scanHistory = [];
+var scanning = false;
 
-async function initCamera() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
-    });
-    video.srcObject = stream;
-    video.onloadedmetadata = () => {
-      statusBar.textContent = 'Camera ready. Tap Scan Now!';
-      statusBar.className = 'status-bar found';
-      scanBtn.disabled = false;
-    };
-  } catch (e) {
-    statusBar.textContent = 'Camera error: ' + e.message;
-    statusBar.className = 'status-bar error';
-    scanBtn.textContent = 'Upload Image';
-    scanBtn.disabled = false;
-    scanBtn.onclick = triggerUpload;
+function setStatus(msg, type) {
+  statusEl.textContent = msg;
+  statusEl.className = 'status ' + (type || 'idle');
+}
+function setProgress(pct) { progressBar.style.width = pct + '%'; }
+
+function initCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setStatus('Camera not supported — use Upload instead', 'error');
+    return;
   }
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } })
+    .then(function(stream) {
+      video.srcObject = stream;
+      video.onloadedmetadata = function() {
+        setStatus('Camera ready — tap Scan Now!', 'idle');
+        scanBtn.disabled = false;
+      };
+    })
+    .catch(function(e) {
+      setStatus('Camera blocked — use Upload instead', 'error');
+    });
 }
 
-async function initTesseract() {
-  worker = await Tesseract.createWorker('eng', 1, {
-    logger: m => {
-      if (m.status === 'recognizing text') {
-        progressFill.style.width = Math.round(m.progress * 100) + '%';
-      }
-    }
-  });
-  await worker.setParameters({
-    tessedit_char_whitelist: '0123456789 \n',
-    tessedit_pageseg_mode: '6'
-  });
-}
-
-async function captureAndScan() {
+function doScan() {
   if (scanning) return;
-  scanning = true;
-  scanBtn.disabled = true;
-  statusBar.textContent = 'Processing image...';
-  statusBar.className = 'status-bar scanning';
-  progressFill.style.width = '0%';
-
-  const ctx = canvas.getContext('2d');
+  var ctx = canvas.getContext('2d');
   canvas.width = video.videoWidth || 640;
   canvas.height = video.videoHeight || 480;
   ctx.drawImage(video, 0, 0);
+  var dataURL = canvas.toDataURL('image/jpeg', 0.92);
+  showCaptured(dataURL);
+  runOCR(dataURL);
+}
 
-  const imageData = canvas.toDataURL('image/png');
-  await processImage(imageData);
+function showCaptured(dataURL) {
+  preview.src = dataURL;
+  preview.style.display = 'block';
+  video.style.display = 'none';
+  retakeBtn.style.display = '';
+  scanBtn.style.display = 'none';
+}
+
+function retake() {
+  preview.style.display = 'none';
+  video.style.display = 'block';
+  retakeBtn.style.display = 'none';
+  scanBtn.style.display = '';
+  setStatus('Camera ready — tap Scan Now!', 'idle');
+  setProgress(0);
 }
 
 function triggerUpload() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.onchange = async e => {
-    const file = e.target.files[0];
+  var inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/*';
+  inp.onchange = function(e) {
+    var file = e.target.files[0];
     if (!file) return;
-    scanning = true;
-    scanBtn.disabled = true;
-    statusBar.textContent = 'Processing image...';
-    statusBar.className = 'status-bar scanning';
-    const reader = new FileReader();
-    reader.onload = async ev => await processImage(ev.target.result);
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      showCaptured(ev.target.result);
+      runOCR(ev.target.result);
+    };
     reader.readAsDataURL(file);
   };
-  input.click();
+  inp.click();
 }
 
-async function processImage(imageData) {
-  try {
-    if (!worker) {
-      statusBar.textContent = 'Loading OCR engine...';
-      await initTesseract();
-    }
-
-    const result = await worker.recognize(imageData);
-    const rawText = result.data.text;
-
-    const matches = rawText.match(/\b\d{3}\b/g) || [];
-    const unique = [...new Set(matches)];
-
-    progressFill.style.width = '100%';
-
-    if (unique.length === 0) {
-      statusBar.textContent = 'No 3-digit numbers found. Try again.';
-      statusBar.className = 'status-bar error';
-    } else {
-      unique.forEach(n => {
-        if (!scannedNumbers.includes(n)) scannedNumbers.push(n);
-      });
-      statusBar.textContent = `Found ${unique.length} number(s)!`;
-      statusBar.className = 'status-bar found';
-      addHistory(unique);
-      renderNumbers();
-    }
-  } catch (err) {
-    statusBar.textContent = 'OCR error: ' + err.message;
-    statusBar.className = 'status-bar error';
-  } finally {
-    scanning = false;
-    scanBtn.disabled = false;
-    setTimeout(() => progressFill.style.width = '0%', 1500);
-  }
+function loadTesseract(cb) {
+  if (typeof Tesseract !== 'undefined') { cb(); return; }
+  setStatus('Loading OCR engine (first time only)…', 'scanning');
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js';
+  s.onload = cb;
+  s.onerror = function() {
+    var s2 = document.createElement('script');
+    s2.src = 'https://unpkg.com/tesseract.js@5.0.4/dist/tesseract.min.js';
+    s2.onload = cb;
+    s2.onerror = function() {
+      setStatus('Failed to load OCR. Check internet connection.', 'error');
+      scanning = false;
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
 }
 
-function renderNumbers() {
-  countBadge.textContent = scannedNumbers.length;
-  if (scannedNumbers.length === 0) {
-    numberList.innerHTML = '<span class="empty-hint">No numbers yet — tap Scan</span>';
+function runOCR(dataURL) {
+  if (scanning) return;
+  scanning = true;
+  setStatus('Preparing OCR…', 'scanning');
+  setProgress(5);
+
+  loadTesseract(function() {
+    setStatus('Recognizing numbers…', 'scanning');
+    setProgress(20);
+
+    Tesseract.recognize(dataURL, 'eng', {
+      logger: function(m) {
+        if (m.status === 'recognizing text') {
+          setProgress(20 + Math.round(m.progress * 70));
+        }
+      }
+    }).then(function(result) {
+      setProgress(95);
+      var text = result.data.text;
+      var found = extractNumbers(text);
+
+      if (found.length === 0) {
+        setStatus('No 3-digit numbers found. Try clearer image or better lighting.', 'error');
+      } else {
+        var added = 0;
+        found.forEach(function(n) {
+          if (!numbers.includes(n)) { numbers.push(n); added++; }
+        });
+        setStatus('Found ' + found.length + ' number(s) — ' + added + ' new!', 'success');
+        addHistory(found);
+        renderChips();
+      }
+      setProgress(100);
+      setTimeout(function() { setProgress(0); }, 1500);
+      scanning = false;
+
+    }).catch(function(err) {
+      console.error('OCR error:', err);
+      setStatus('OCR error: ' + (err.message || String(err)), 'error');
+      setProgress(0);
+      scanning = false;
+    });
+  });
+}
+
+function extractNumbers(text) {
+  var matches = text.match(/\b\d{3}\b/g) || [];
+  var seen = {};
+  var unique = [];
+  matches.forEach(function(n) { if (!seen[n]) { seen[n] = true; unique.push(n); } });
+  return unique;
+}
+
+function renderChips() {
+  badge.textContent = numbers.length;
+  if (numbers.length === 0) {
+    chipWrap.innerHTML = '<span class="empty">No numbers yet — tap Scan</span>';
     return;
   }
-  numberList.innerHTML = '';
-  scannedNumbers.forEach(n => {
-    const chip = document.createElement('div');
-    chip.className = 'num-chip';
-    chip.textContent = n;
-    chip.onclick = () => {
-      chip.classList.toggle('selected');
-      navigator.clipboard.writeText(n).catch(() => {});
+  chipWrap.innerHTML = '';
+  numbers.forEach(function(n) {
+    var c = document.createElement('div');
+    c.className = 'chip';
+    c.textContent = n;
+    c.onclick = function() {
+      c.classList.toggle('sel');
+      navigator.clipboard && navigator.clipboard.writeText(n).catch(function(){});
       showToast('Copied: ' + n);
     };
-    numberList.appendChild(chip);
+    chipWrap.appendChild(c);
   });
 }
 
 function addHistory(nums) {
-  const now = new Date();
-  const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  history.unshift({ nums, time });
-  if (history.length > 10) history.pop();
-
-  historyList.innerHTML = '';
-  history.forEach(h => {
-    const row = document.createElement('div');
-    row.className = 'history-row';
-    row.innerHTML = `<span class="history-nums">${h.nums.join(', ')}</span><span class="history-time">${h.time}</span>`;
-    historyList.appendChild(row);
+  var time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  scanHistory.unshift({ nums: nums.slice(), time: time });
+  if (scanHistory.length > 15) scanHistory.pop();
+  historyWrap.innerHTML = '';
+  scanHistory.forEach(function(h) {
+    var row = document.createElement('div');
+    row.className = 'h-row';
+    row.innerHTML = '<span class="h-nums">' + h.nums.join(' · ') + '</span><span class="h-time">' + h.time + '</span>';
+    historyWrap.appendChild(row);
   });
 }
 
-function clearResults() {
-  scannedNumbers = [];
-  renderNumbers();
-  countBadge.textContent = '0';
-  statusBar.textContent = 'Cleared. Ready to scan.';
-  statusBar.className = 'status-bar';
-  showToast('Results cleared');
+function clearAll() {
+  numbers = [];
+  renderChips();
+  showToast('Cleared');
+  setStatus('Cleared — ready to scan!', 'idle');
+}
+
+function dl(name, content, type) {
+  var blob = new Blob([content], { type: type });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
 }
 
 function exportCSV() {
-  if (scannedNumbers.length === 0) { showToast('No numbers to export'); return; }
-  const csv = 'Number,Scanned At\n' + scannedNumbers.map((n, i) => `${n},${new Date().toLocaleDateString()}`).join('\n');
-  download('numbers.csv', csv, 'text/csv');
-  showToast('CSV downloaded — open in Excel!');
+  if (!numbers.length) { showToast('No numbers yet'); return; }
+  var rows = ['No,Number,Date'];
+  numbers.forEach(function(n, i) { rows.push((i+1) + ',' + n + ',' + new Date().toLocaleDateString()); });
+  dl('numbers.csv', rows.join('\n'), 'text/csv');
+  showToast('CSV saved — open in Excel!');
 }
 
 function exportTXT() {
-  if (scannedNumbers.length === 0) { showToast('No numbers to export'); return; }
-  const txt = 'Scanned Numbers\n' + '='.repeat(20) + '\n\n' + scannedNumbers.join('\n') + '\n\nTotal: ' + scannedNumbers.length + '\nDate: ' + new Date().toLocaleString();
-  download('numbers.txt', txt, 'text/plain');
-  showToast('TXT downloaded — open in Word!');
+  if (!numbers.length) { showToast('No numbers yet'); return; }
+  var lines = ['SCANNED NUMBERS', '====================', ''].concat(numbers).concat(['', 'Total: ' + numbers.length, 'Date: ' + new Date().toLocaleString()]);
+  dl('numbers.txt', lines.join('\n'), 'text/plain');
+  showToast('TXT saved — open in Word!');
 }
 
-function copyToClipboard() {
-  if (scannedNumbers.length === 0) { showToast('No numbers to copy'); return; }
-  const text = scannedNumbers.join('\n');
-  navigator.clipboard.writeText(text).then(() => showToast('Copied! Paste into Google Sheets')).catch(() => {
-    const ta = document.createElement('textarea');
+function copySheets() {
+  if (!numbers.length) { showToast('No numbers yet'); return; }
+  var text = numbers.join('\n');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function() { showToast('Copied! Paste into Google Sheets'); }).catch(fallbackCopy);
+  } else { fallbackCopy(); }
+  function fallbackCopy() {
+    var ta = document.createElement('textarea');
     ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
     showToast('Copied! Paste into Google Sheets');
-  });
+  }
 }
 
 function exportJSON() {
-  if (scannedNumbers.length === 0) { showToast('No numbers to export'); return; }
-  const obj = { numbers: scannedNumbers, count: scannedNumbers.length, exported: new Date().toISOString() };
-  download('numbers.json', JSON.stringify(obj, null, 2), 'application/json');
-  showToast('JSON downloaded!');
-}
-
-function download(filename, content, type) {
-  const blob = new Blob([content], { type });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
+  if (!numbers.length) { showToast('No numbers yet'); return; }
+  var obj = { numbers: numbers, count: numbers.length, exported: new Date().toISOString() };
+  dl('numbers.json', JSON.stringify(obj, null, 2), 'application/json');
+  showToast('JSON saved!');
 }
 
 function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2200);
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2200);
 }
 
 initCamera();
