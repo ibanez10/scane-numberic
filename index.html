@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -12,78 +12,35 @@
   .header h1 { font-size: 22px; font-weight: 700; }
   .header p { font-size: 13px; color: #666; margin-top: 2px; }
 
-  /* Camera */
-  .camera-wrap {
-    background: #111;
-    border-radius: 14px;
-    overflow: hidden;
-    position: relative;
-    width: 100%;
-    aspect-ratio: 4/3;
-    margin-bottom: 10px;
-  }
+  .camera-wrap { background: #111; border-radius: 14px; overflow: hidden; position: relative; width: 100%; aspect-ratio: 4/3; margin-bottom: 10px; }
   #video { width: 100%; height: 100%; object-fit: cover; display: block; }
   #canvas { display: none; }
 
-  /* Scan guide overlay — darkens outside the box */
-  .overlay-top, .overlay-bottom, .overlay-left, .overlay-right {
-    position: absolute;
-    background: rgba(0,0,0,0.45);
-    pointer-events: none;
-  }
-  /* These 4 divs form a "hole" in the middle */
+  .overlay-top, .overlay-bottom, .overlay-left, .overlay-right { position: absolute; background: rgba(0,0,0,0.45); pointer-events: none; }
   .overlay-top    { top: 0; left: 0; right: 0; height: 30%; }
   .overlay-bottom { bottom: 0; left: 0; right: 0; height: 30%; }
   .overlay-left   { top: 30%; bottom: 30%; left: 0; width: 12.5%; }
   .overlay-right  { top: 30%; bottom: 30%; right: 0; width: 12.5%; }
 
-  /* Guide box border */
-  .guide-box {
-    position: absolute;
-    top: 30%; left: 12.5%;
-    width: 75%; height: 40%;
-    border: 2px solid #4aaeff;
-    border-radius: 8px;
-    pointer-events: none;
-  }
-  /* Corner accents */
-  .guide-box::before, .guide-box::after {
-    content: '';
-    position: absolute;
-    width: 18px; height: 18px;
-    border-color: #fff;
-    border-style: solid;
-  }
+  .guide-box { position: absolute; top: 30%; left: 12.5%; width: 75%; height: 40%; border: 2px solid #4aaeff; border-radius: 8px; pointer-events: none; }
+  .guide-box::before, .guide-box::after { content: ''; position: absolute; width: 18px; height: 18px; border-color: #fff; border-style: solid; }
   .guide-box::before { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
   .guide-box::after  { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
 
-  .scan-flash {
-    position: absolute; inset: 0;
-    background: rgba(255,255,255,0);
-    pointer-events: none;
-    border-radius: 14px;
-    transition: background 0.1s;
-  }
+  .scan-flash { position: absolute; inset: 0; background: rgba(255,255,255,0); pointer-events: none; border-radius: 14px; transition: background 0.1s; }
   .scan-flash.flash { background: rgba(255,255,255,0.5); }
+  .cam-hint { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 11px; color: rgba(255,255,255,0.85); pointer-events: none; }
 
-  .cam-hint {
-    position: absolute; bottom: 10px; left: 0; right: 0;
-    text-align: center; font-size: 11px;
-    color: rgba(255,255,255,0.85);
-    pointer-events: none;
-  }
-
-  /* Status */
-  .status { text-align: center; font-size: 13px; padding: 9px 12px; border-radius: 8px; margin-bottom: 10px; min-height: 36px; display: flex; align-items: center; justify-content: center; }
+  .status { text-align: center; font-size: 13px; padding: 9px 12px; border-radius: 8px; margin-bottom: 10px; min-height: 36px; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .status.idle     { background: #e8f4fd; color: #1a5f9e; }
   .status.scanning { background: #fff8e1; color: #b45309; }
   .status.success  { background: #e8f5e9; color: #2e7d32; }
   .status.error    { background: #fdecea; color: #c62828; }
+  .status.speaking { background: #f3e8ff; color: #7e22ce; }
 
   .progress { height: 4px; background: #ddd; border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
   .progress-bar { height: 100%; width: 0; background: #2563eb; border-radius: 2px; transition: width 0.3s; }
 
-  /* Buttons */
   .btn-row { display: flex; gap: 8px; margin-bottom: 10px; }
   button { cursor: pointer; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; padding: 12px 10px; transition: opacity 0.15s, transform 0.1s; }
   button:active { transform: scale(0.97); }
@@ -92,7 +49,25 @@
   #clearBtn { flex: 1; background: #fee2e2; color: #991b1b; }
   #uploadBtn { width: 100%; background: #f3f4f6; color: #374151; border: 1.5px dashed #9ca3af; border-radius: 10px; padding: 11px; font-size: 13px; margin-bottom: 14px; }
 
-  /* Results */
+  /* Voice settings card */
+  .voice-card { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 14px; margin-bottom: 12px; }
+  .voice-card-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .voice-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .voice-row:last-child { margin-bottom: 0; }
+  .voice-label { font-size: 12px; color: #555; min-width: 70px; }
+  .voice-row select { flex: 1; padding: 6px 8px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 13px; background: #f9fafb; }
+  .voice-row input[type=range] { flex: 1; accent-color: #2563eb; }
+  .range-val { font-size: 12px; color: #2563eb; font-weight: 700; min-width: 30px; text-align: right; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+  .toggle-label { font-size: 13px; color: #374151; }
+  .toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; inset: 0; background: #d1d5db; border-radius: 24px; cursor: pointer; transition: background 0.2s; }
+  .slider:before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
+  input:checked + .slider { background: #2563eb; }
+  input:checked + .slider:before { transform: translateX(20px); }
+  .test-voice-btn { margin-top: 10px; width: 100%; background: #ede9fe; color: #5b21b6; border-radius: 8px; padding: 8px; font-size: 13px; font-weight: 600; border: 1px solid #c4b5fd; }
+
   .section { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 14px; margin-bottom: 12px; }
   .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .section-title { font-size: 14px; font-weight: 700; }
@@ -103,12 +78,10 @@
   .chip.sel { background: #2563eb; color: #fff; border-color: #2563eb; }
   .empty { font-size: 13px; color: #9ca3af; }
 
-  /* Export */
   .export-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .exp-btn { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 8px; font-size: 13px; font-weight: 600; color: #374151; display: flex; flex-direction: column; align-items: center; gap: 4px; }
   .exp-icon { font-size: 22px; }
 
-  /* History */
   .h-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f3f4f6; }
   .h-row:last-child { border-bottom: none; }
   .h-nums { font-family: monospace; font-weight: 700; color: #2563eb; font-size: 14px; }
@@ -116,6 +89,10 @@
 
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1f2937; color: #fff; padding: 10px 22px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.25s; pointer-events: none; white-space: nowrap; z-index: 999; }
   .toast.show { opacity: 1; }
+
+  /* speaking animation */
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+  .speaking-icon { display: inline-block; animation: pulse 0.6s ease-in-out infinite; }
 </style>
 </head>
 <body>
@@ -125,17 +102,13 @@
     <p>Hanya angka di dalam kotak biru yang akan dideteksi</p>
   </div>
 
-  <div class="camera-wrap" id="cameraWrap">
+  <div class="camera-wrap">
     <video id="video" autoplay playsinline muted></video>
     <canvas id="canvas"></canvas>
-
-    <!-- Dark overlay outside guide box -->
     <div class="overlay-top"></div>
     <div class="overlay-bottom"></div>
     <div class="overlay-left"></div>
     <div class="overlay-right"></div>
-
-    <!-- Guide box border -->
     <div class="guide-box"></div>
     <div class="scan-flash" id="scanFlash"></div>
     <div class="cam-hint">📦 Letakkan angka 3 digit di dalam kotak biru</div>
@@ -149,6 +122,44 @@
     <button id="clearBtn" onclick="clearAll()">🗑 Hapus</button>
   </div>
   <button id="uploadBtn" onclick="triggerUpload()">📁 Upload foto dari galeri</button>
+
+  <!-- Voice Settings -->
+  <div class="voice-card">
+    <div class="voice-card-title">🔊 Pengaturan Suara</div>
+
+    <div class="toggle-row" style="margin-bottom:12px">
+      <span class="toggle-label">Aktifkan suara saat scan berhasil</span>
+      <label class="toggle">
+        <input type="checkbox" id="voiceToggle" checked onchange="toggleVoice()">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div id="voiceSettings">
+      <div class="voice-row">
+        <span class="voice-label">🗣️ Suara</span>
+        <select id="voiceSelect" onchange="saveVoice()">
+          <option value="">Memuat daftar suara…</option>
+        </select>
+      </div>
+      <div class="voice-row">
+        <span class="voice-label">⚡ Kecepatan</span>
+        <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="0.9" oninput="updateRate()">
+        <span class="range-val" id="rateVal">0.9x</span>
+      </div>
+      <div class="voice-row">
+        <span class="voice-label">🎵 Nada</span>
+        <input type="range" id="pitchSlider" min="0.5" max="2" step="0.1" value="1.0" oninput="updatePitch()">
+        <span class="range-val" id="pitchVal">1.0</span>
+      </div>
+      <div class="voice-row">
+        <span class="voice-label">🔉 Volume</span>
+        <input type="range" id="volSlider" min="0" max="1" step="0.1" value="1" oninput="updateVol()">
+        <span class="range-val" id="volVal">100%</span>
+      </div>
+      <button class="test-voice-btn" onclick="testVoice()">▶ Tes Suara Sekarang</button>
+    </div>
+  </div>
 
   <div class="section">
     <div class="section-header">
@@ -186,94 +197,187 @@ var chipWrap    = document.getElementById('chipWrap');
 var badge       = document.getElementById('badge');
 var historyWrap = document.getElementById('historyWrap');
 var scanFlash   = document.getElementById('scanFlash');
-var cameraWrap  = document.getElementById('cameraWrap');
+var voiceSelect = document.getElementById('voiceSelect');
+var voiceToggle = document.getElementById('voiceToggle');
 
 var numbers     = [];
 var scanHistory = [];
 var scanning    = false;
+var voiceEnabled = true;
+var voices      = [];
+var selectedVoice = null;
 
-// Guide box dimensions (must match CSS: top 30%, left 12.5%, w 75%, h 40%)
 var GUIDE = { top: 0.30, left: 0.125, width: 0.75, height: 0.40 };
 
+// ─── Status ──────────────────────────────────────────────
 function setStatus(msg, type) {
   statusEl.textContent = msg;
   statusEl.className = 'status ' + (type || 'idle');
 }
 function setProgress(pct) { progressBar.style.width = pct + '%'; }
 
-// ── Camera ──────────────────────────────────────────────
-function initCamera() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    setStatus('Kamera tidak didukung — gunakan Upload', 'error');
-    return;
+// ─── TTS ─────────────────────────────────────────────────
+function loadVoices() {
+  voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return;
+
+  voiceSelect.innerHTML = '';
+
+  // Prioritize Indonesian voices, then English
+  var idVoices = voices.filter(function(v){ return v.lang.startsWith('id'); });
+  var enVoices = voices.filter(function(v){ return v.lang.startsWith('en'); });
+  var otherVoices = voices.filter(function(v){ return !v.lang.startsWith('id') && !v.lang.startsWith('en'); });
+
+  function addGroup(label, list) {
+    if (!list.length) return;
+    var og = document.createElement('optgroup');
+    og.label = label;
+    list.forEach(function(v) {
+      var opt = document.createElement('option');
+      opt.value = v.name;
+      opt.textContent = v.name + ' (' + v.lang + ')';
+      og.appendChild(opt);
+    });
+    voiceSelect.appendChild(og);
   }
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }
-  }).then(function(stream) {
-    video.srcObject = stream;
-    video.onloadedmetadata = function() {
-      setStatus('Kamera siap — arahkan angka ke kotak, tap Scan!', 'idle');
-      scanBtn.disabled = false;
-    };
-  }).catch(function() {
-    setStatus('Kamera diblokir — gunakan Upload', 'error');
-  });
+
+  addGroup('🇮🇩 Indonesia', idVoices);
+  addGroup('🇺🇸 English', enVoices);
+  addGroup('🌐 Lainnya', otherVoices);
+
+  // Auto-select best Indonesian voice
+  var preferred = idVoices[0] || enVoices[0] || voices[0];
+  if (preferred) {
+    voiceSelect.value = preferred.name;
+    selectedVoice = preferred;
+  }
 }
 
-// ── Capture: crop only guide-box area ───────────────────
+window.speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function saveVoice() {
+  var name = voiceSelect.value;
+  selectedVoice = voices.find(function(v){ return v.name === name; }) || null;
+}
+
+function updateRate()  { document.getElementById('rateVal').textContent  = parseFloat(document.getElementById('rateSlider').value).toFixed(1) + 'x'; }
+function updatePitch() { document.getElementById('pitchVal').textContent = parseFloat(document.getElementById('pitchSlider').value).toFixed(1); }
+function updateVol()   { document.getElementById('volVal').textContent   = Math.round(parseFloat(document.getElementById('volSlider').value)*100) + '%'; }
+
+function toggleVoice() {
+  voiceEnabled = voiceToggle.checked;
+  document.getElementById('voiceSettings').style.opacity = voiceEnabled ? '1' : '0.4';
+  document.getElementById('voiceSettings').style.pointerEvents = voiceEnabled ? '' : 'none';
+}
+
+// Build Indonesian number speech text
+function buildSpeechText(nums) {
+  if (nums.length === 0) return '';
+  var parts = [];
+  nums.forEach(function(n) {
+    // Spell out each digit for clarity: "4 2 3" → "empat dua tiga"
+    var digits = n.split('').map(digitToWord).join(', ');
+    parts.push(digits);
+  });
+
+  if (parts.length === 1) {
+    return 'Angka ditemukan: ' + parts[0];
+  } else {
+    return 'Ditemukan ' + parts.length + ' angka: ' + parts.join('. Berikutnya, ');
+  }
+}
+
+function digitToWord(d) {
+  var words = ['nol','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan'];
+  return words[parseInt(d)] || d;
+}
+
+function speak(text) {
+  if (!voiceEnabled) return;
+  if (!window.speechSynthesis) return;
+
+  window.speechSynthesis.cancel(); // stop any previous speech
+
+  var utter = new SpeechSynthesisUtterance(text);
+  if (selectedVoice) utter.voice = selectedVoice;
+  utter.rate   = parseFloat(document.getElementById('rateSlider').value);
+  utter.pitch  = parseFloat(document.getElementById('pitchSlider').value);
+  utter.volume = parseFloat(document.getElementById('volSlider').value);
+  utter.lang   = selectedVoice ? selectedVoice.lang : 'id-ID';
+
+  utter.onstart = function() {
+    setStatus('🔊 Membacakan angka…', 'speaking');
+  };
+  utter.onend = function() {
+    setStatus('✅ Selesai — siap scan lagi!', 'success');
+    setTimeout(function(){ setStatus('Kamera siap — tap Scan!', 'idle'); }, 2000);
+  };
+  utter.onerror = function() {
+    setStatus('Kamera siap — tap Scan!', 'idle');
+  };
+
+  window.speechSynthesis.speak(utter);
+}
+
+function testVoice() {
+  speak('Halo! Ini adalah tes suara. Angka ditemukan: empat, dua, tiga.');
+}
+
+// ─── Camera ──────────────────────────────────────────────
+function initCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setStatus('Kamera tidak didukung — gunakan Upload', 'error'); return;
+  }
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } })
+    .then(function(stream) {
+      video.srcObject = stream;
+      video.onloadedmetadata = function() {
+        setStatus('Kamera siap — arahkan angka ke kotak, tap Scan!', 'idle');
+        scanBtn.disabled = false;
+      };
+    }).catch(function() {
+      setStatus('Kamera diblokir — gunakan Upload', 'error');
+    });
+}
+
 function captureGuideArea() {
   var vw = video.videoWidth  || 640;
   var vh = video.videoHeight || 480;
-
-  // Pixel coords of the guide box inside the actual video frame
   var cx = Math.round(GUIDE.left   * vw);
   var cy = Math.round(GUIDE.top    * vh);
   var cw = Math.round(GUIDE.width  * vw);
   var ch = Math.round(GUIDE.height * vh);
-
-  // Draw only that region onto the canvas
-  canvas.width  = cw;
-  canvas.height = ch;
-  var ctx = canvas.getContext('2d');
-  ctx.drawImage(video, cx, cy, cw, ch, 0, 0, cw, ch);
-
+  canvas.width = cw; canvas.height = ch;
+  canvas.getContext('2d').drawImage(video, cx, cy, cw, ch, 0, 0, cw, ch);
   return canvas.toDataURL('image/jpeg', 0.95);
 }
 
-// ── Flash effect ─────────────────────────────────────────
 function flashEffect() {
   scanFlash.classList.add('flash');
-  setTimeout(function() { scanFlash.classList.remove('flash'); }, 150);
+  setTimeout(function(){ scanFlash.classList.remove('flash'); }, 150);
 }
 
-// ── Main scan ─────────────────────────────────────────────
 function doScan() {
   if (scanning) return;
   flashEffect();
-  var dataURL = captureGuideArea();
-  runOCR(dataURL);
+  runOCR(captureGuideArea());
 }
 
 function triggerUpload() {
   var inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = 'image/*';
+  inp.type = 'file'; inp.accept = 'image/*';
   inp.onchange = function(e) {
-    var file = e.target.files[0];
-    if (!file) return;
+    var file = e.target.files[0]; if (!file) return;
     var reader = new FileReader();
     reader.onload = function(ev) {
-      // For uploaded images, crop the same guide-box region
       var img = new Image();
       img.onload = function() {
         var vw = img.width, vh = img.height;
-        var cx = Math.round(GUIDE.left * vw);
-        var cy = Math.round(GUIDE.top * vh);
-        var cw = Math.round(GUIDE.width * vw);
-        var ch = Math.round(GUIDE.height * vh);
+        var cx = Math.round(GUIDE.left * vw), cy = Math.round(GUIDE.top * vh);
+        var cw = Math.round(GUIDE.width * vw), ch = Math.round(GUIDE.height * vh);
         canvas.width = cw; canvas.height = ch;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, cx, cy, cw, ch, 0, 0, cw, ch);
+        canvas.getContext('2d').drawImage(img, cx, cy, cw, ch, 0, 0, cw, ch);
         runOCR(canvas.toDataURL('image/jpeg', 0.95));
       };
       img.src = ev.target.result;
@@ -283,23 +387,18 @@ function triggerUpload() {
   inp.click();
 }
 
-// ── OCR ──────────────────────────────────────────────────
+// ─── OCR ─────────────────────────────────────────────────
 function loadTesseract(cb) {
   if (typeof Tesseract !== 'undefined') { cb(); return; }
-  setStatus('Memuat OCR engine (pertama kali saja)…', 'scanning');
-  function tryLoad(src, fallbackSrc) {
+  setStatus('Memuat OCR engine…', 'scanning');
+  function tryLoad(src, fallback) {
     var s = document.createElement('script');
-    s.src = src;
-    s.onload = cb;
+    s.src = src; s.onload = cb;
     s.onerror = function() {
-      if (fallbackSrc) {
+      if (fallback) {
         var s2 = document.createElement('script');
-        s2.src = fallbackSrc;
-        s2.onload = cb;
-        s2.onerror = function() {
-          setStatus('Gagal memuat OCR. Periksa koneksi internet.', 'error');
-          scanning = false;
-        };
+        s2.src = fallback; s2.onload = cb;
+        s2.onerror = function() { setStatus('Gagal memuat OCR. Periksa internet.', 'error'); scanning = false; };
         document.head.appendChild(s2);
       }
     };
@@ -315,89 +414,76 @@ function runOCR(dataURL) {
   if (scanning) return;
   scanning = true;
   scanBtn.disabled = true;
-  setStatus('Memproses…', 'scanning');
+  setStatus('Memproses gambar…', 'scanning');
   setProgress(5);
 
   loadTesseract(function() {
     setProgress(20);
-
     Tesseract.recognize(dataURL, 'eng', {
       logger: function(m) {
-        if (m.status === 'recognizing text') {
-          setProgress(20 + Math.round(m.progress * 70));
-        }
+        if (m.status === 'recognizing text') setProgress(20 + Math.round(m.progress * 70));
       }
     }).then(function(result) {
       setProgress(98);
-      var text = result.data.text;
-      var found = extractNumbers(text);
+      var found = extractNumbers(result.data.text);
 
       if (found.length === 0) {
         setStatus('❌ Angka 3 digit tidak ditemukan. Coba lagi.', 'error');
+        // Still reset camera even on failure
+        setTimeout(function(){ setStatus('Kamera siap — tap Scan!', 'idle'); }, 2500);
       } else {
         var added = 0;
-        found.forEach(function(n) {
-          if (!numbers.includes(n)) { numbers.push(n); added++; }
-        });
-        setStatus('✅ Ditemukan ' + found.length + ' angka — ' + added + ' baru ditambahkan!', 'success');
+        found.forEach(function(n){ if (!numbers.includes(n)){ numbers.push(n); added++; } });
+        setStatus('✅ Ditemukan ' + found.length + ' angka — ' + added + ' baru!', 'success');
         addHistory(found);
         renderChips();
+        // 🔊 Speak the numbers
+        speak(buildSpeechText(found));
       }
 
       setProgress(100);
-      setTimeout(function() { setProgress(0); }, 1200);
-
-      // ✅ Kamera kembali otomatis setelah scan selesai
-      resetToCamera();
+      setTimeout(function(){ setProgress(0); }, 1200);
+      scanning = false;
+      scanBtn.disabled = false;
 
     }).catch(function(err) {
       console.error(err);
       setStatus('OCR error: ' + (err.message || String(err)), 'error');
       setProgress(0);
-      resetToCamera();
+      scanning = false;
+      scanBtn.disabled = false;
+      setTimeout(function(){ setStatus('Kamera siap — tap Scan!', 'idle'); }, 2500);
     });
   });
 }
 
-// ── Reset camera (no retake button needed) ───────────────
-function resetToCamera() {
-  scanning = false;
-  scanBtn.disabled = false;
-  // Camera video is always visible — nothing to toggle
-}
-
-// ── Extract only 3-digit numbers ────────────────────────
 function extractNumbers(text) {
-  // Match standalone 3-digit numbers only (not part of longer numbers)
   var matches = text.match(/(?<!\d)\d{3}(?!\d)/g) || [];
   var seen = {}, unique = [];
-  matches.forEach(function(n) { if (!seen[n]) { seen[n] = true; unique.push(n); } });
+  matches.forEach(function(n){ if (!seen[n]){ seen[n]=true; unique.push(n); } });
   return unique;
 }
 
-// ── Render ───────────────────────────────────────────────
+// ─── UI ──────────────────────────────────────────────────
 function renderChips() {
   badge.textContent = numbers.length;
-  if (numbers.length === 0) {
-    chipWrap.innerHTML = '<span class="empty">Belum ada — tap Scan</span>';
-    return;
-  }
+  if (!numbers.length) { chipWrap.innerHTML = '<span class="empty">Belum ada — tap Scan</span>'; return; }
   chipWrap.innerHTML = '';
   numbers.forEach(function(n) {
     var c = document.createElement('div');
-    c.className = 'chip';
-    c.textContent = n;
+    c.className = 'chip'; c.textContent = n;
     c.onclick = function() {
       c.classList.toggle('sel');
       if (navigator.clipboard) navigator.clipboard.writeText(n).catch(function(){});
-      showToast('Disalin: ' + n);
+      speak('Angka ' + n.split('').map(digitToWord).join(', '));
+      showToast('Disalin & dibacakan: ' + n);
     };
     chipWrap.appendChild(c);
   });
 }
 
 function addHistory(nums) {
-  var time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  var time = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
   scanHistory.unshift({ nums: nums.slice(), time: time });
   if (scanHistory.length > 20) scanHistory.pop();
   historyWrap.innerHTML = '';
@@ -412,50 +498,40 @@ function addHistory(nums) {
 function clearAll() {
   numbers = [];
   renderChips();
+  window.speechSynthesis && window.speechSynthesis.cancel();
   setStatus('Data dihapus — siap scan!', 'idle');
   showToast('Data dihapus');
 }
 
-// ── Export ───────────────────────────────────────────────
+// ─── Export ──────────────────────────────────────────────
 function dl(name, content, type) {
   var blob = new Blob([content], { type: type });
   var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = name; a.click();
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
 }
-
 function exportCSV() {
   if (!numbers.length) { showToast('Belum ada angka'); return; }
   var rows = ['No,Angka,Tanggal'];
-  numbers.forEach(function(n, i) { rows.push((i+1)+','+n+','+new Date().toLocaleDateString()); });
+  numbers.forEach(function(n,i){ rows.push((i+1)+','+n+','+new Date().toLocaleDateString()); });
   dl('angka.csv', rows.join('\n'), 'text/csv');
   showToast('CSV disimpan — buka di Excel!');
 }
-
 function exportTXT() {
   if (!numbers.length) { showToast('Belum ada angka'); return; }
   var lines = ['ANGKA HASIL SCAN','====================',''].concat(numbers).concat(['','Total: '+numbers.length,'Tanggal: '+new Date().toLocaleString()]);
   dl('angka.txt', lines.join('\n'), 'text/plain');
   showToast('TXT disimpan — buka di Word!');
 }
-
 function copySheets() {
   if (!numbers.length) { showToast('Belum ada angka'); return; }
   var text = numbers.join('\n');
-  function fb() {
-    var ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-    showToast('Disalin! Paste ke Google Sheets');
-  }
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(function(){ showToast('Disalin! Paste ke Google Sheets'); }).catch(fb);
-  } else { fb(); }
+  function fb(){ var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('Disalin! Paste ke Google Sheets'); }
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(function(){ showToast('Disalin! Paste ke Google Sheets'); }).catch(fb);
+  else fb();
 }
-
 function exportJSON() {
   if (!numbers.length) { showToast('Belum ada angka'); return; }
-  dl('angka.json', JSON.stringify({ numbers: numbers, count: numbers.length, exported: new Date().toISOString() }, null, 2), 'application/json');
+  dl('angka.json', JSON.stringify({ numbers:numbers, count:numbers.length, exported:new Date().toISOString() }, null, 2), 'application/json');
   showToast('JSON disimpan!');
 }
 
